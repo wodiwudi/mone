@@ -1,25 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>run.mone</groupId>
-    <artifactId>prometheus</artifactId>
-    <version>0.0.6-jdk20-SNAPSHOT</version>
-  </parent>
-  <artifactId>prometheus-metrics</artifactId>
-  <version>${prometheus-all.version}</version>
-  <dependencies>
-    <dependency>
-      <groupId>run.mone</groupId>
-      <artifactId>prometheus-client</artifactId>
-      <version>${prometheus-all.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjrt</artifactId>
-      <version>1.8.4</version>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>run.mone</groupId>
+        <artifactId>prometheus</artifactId>
+        <version>0.0.6-jdk25-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>prometheus-metrics</artifactId>
+    <version>${prometheus-all.version}</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>25</source>
+                    <target>25</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.40</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>run.mone</groupId>
+            <artifactId>prometheus-client</artifactId>
+            <version>${prometheus-all.version}</version>
+        </dependency>
+
+        <!-- 显式声明 micrometer 依赖，确保依赖传递 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.8.4</version>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
 </project>

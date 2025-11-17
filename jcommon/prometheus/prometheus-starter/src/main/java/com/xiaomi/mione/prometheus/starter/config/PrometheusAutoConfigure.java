@@ -18,7 +18,6 @@ package com.xiaomi.mione.prometheus.starter.config;
 
 import com.sun.net.httpserver.HttpServer;
 import com.xiaomi.youpin.prometheus.client.Metrics;
-import com.xiaomi.youpin.prometheus.client.Prometheus;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.HTTPServer;
 import lombok.Setter;
@@ -29,7 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -73,11 +72,16 @@ public class PrometheusAutoConfigure {
     private String appName;
 
 
-    @Value("${server.type}")
+    @Value("${server.type:staging}")
     private String appGroup;
 
+    public PrometheusAutoConfigure() {
+        log.info("PrometheusAutoConfigure bean is being created");
+    }
+
     @PostConstruct
-    private void init() {
+    public void init() {
+        log.info("===== PrometheusAutoConfigure init() method is being called =====");
         String serviceName = System.getenv("mione.app.name");
         if (StringUtils.isEmpty(serviceName)) {
             String property = System.getProperty("otel.resource.attributes");
@@ -88,23 +92,27 @@ public class PrometheusAutoConfigure {
             }
         }
         serviceName = serviceName.replaceAll("-","_");
+        log.info("Initializing Prometheus Metrics with appGroup={}, serviceName={}", appGroup, serviceName);
         Metrics.getInstance().init(appGroup, serviceName);
 
         new Thread(() -> {
-            log.info("start pormetheus server");
+            log.info("Starting Prometheus HTTP Server...");
             try {
                 String port = System.getenv("PROMETHEUS_PORT");
                 if (null == port) {
                     port = "4444";
                 }
-                log.info("pormetheus port: {}", port);
+                log.info("Prometheus HTTP Server port: {}", port);
                 InetSocketAddress addr = new InetSocketAddress(Integer.valueOf(port));
                 Map<String, CollectorRegistry> map = new HashMap<>(5);
                 map.put("default", CollectorRegistry.defaultRegistry);
-                map.put("jvm",Prometheus.REGISTRY.getPrometheusRegistry());
+                // 注意：Micrometer (Prometheus.REGISTRY) 使用新的 Prometheus client API (io.prometheus.metrics)
+                // 而 HTTPServer 使用旧的 API (io.prometheus.client)，两者不兼容
+                // Micrometer 的 metrics 应通过 Spring Actuator 的 /actuator/prometheus 端点暴露
                 new HTTPServer(HttpServer.create(addr, 3), map, false);
+                log.info("Prometheus HTTP Server started successfully on port {}", port);
             } catch (IOException e) {
-                log.error("start prometheus server error:{}", e.getMessage());
+                log.error("Failed to start Prometheus HTTP Server: {}", e.getMessage(), e);
             }
         }).start();
     }

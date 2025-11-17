@@ -1,7 +1,7 @@
 package com.xiaomi.youpin.prometheus.client;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.prometheus.client.*;
 import lombok.extern.slf4j.Slf4j;
 
