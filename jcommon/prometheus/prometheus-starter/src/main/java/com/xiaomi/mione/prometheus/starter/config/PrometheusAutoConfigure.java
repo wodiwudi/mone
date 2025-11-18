@@ -74,11 +74,11 @@ public class PrometheusAutoConfigure implements InitializingBean {
     private String appName;
 
 
-    @Value("${server.type}")
+    @Value("${server.type:staging}")
     private String appGroup;
 
     public PrometheusAutoConfigure() {
-
+        log.info("Prometheus Auto Configure");
     }
 
     //@PostConstruct
@@ -89,10 +89,26 @@ public class PrometheusAutoConfigure implements InitializingBean {
             if(StringUtils.isEmpty(property)) {
                 serviceName = appName;
             }else{
-                serviceName = property.split("=")[1];
+                // 安全地解析 otel.resource.attributes 属性
+                String[] parts = property.split("=", 2);
+                if (parts.length > 1) {
+                    serviceName = parts[1];
+                } else {
+                    serviceName = appName;
+                }
             }
         }
+        // 确保 serviceName 不为 null
+        if (serviceName == null || serviceName.isEmpty()) {
+            serviceName = appName != null ? appName : "default_service_name";
+        }
         serviceName = serviceName.replaceAll("-","_");
+        
+        // 确保 appGroup 不为 null
+        if (appGroup == null || appGroup.isEmpty()) {
+            appGroup = serverType != null ? serverType : "staging";
+        }
+        
         Metrics.getInstance().init(appGroup, serviceName);
 
         new Thread(() -> {
@@ -116,7 +132,7 @@ public class PrometheusAutoConfigure implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        log.info("Prometheus Auto Configure");
+        log.info("Prometheus Auto Configure - afterPropertiesSet");
         init();
     }
 
