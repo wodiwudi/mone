@@ -23,13 +23,14 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.HTTPServer;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+//import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ import java.util.Map;
 @Configuration
 //@ConditionalOnClass({PrometeusMybatisInterceptor.class, Redis.class})
 @Slf4j
-public class PrometheusAutoConfigure {
+public class PrometheusAutoConfigure implements InitializingBean {
 
     @Autowired
     private ApplicationContext context;
@@ -76,7 +77,11 @@ public class PrometheusAutoConfigure {
     @Value("${server.type}")
     private String appGroup;
 
-    @PostConstruct
+    public PrometheusAutoConfigure() {
+
+    }
+
+    //@PostConstruct
     private void init() {
         String serviceName = System.getenv("mione.app.name");
         if (StringUtils.isEmpty(serviceName)) {
@@ -107,6 +112,12 @@ public class PrometheusAutoConfigure {
                 log.error("start prometheus server error:{}", e.getMessage());
             }
         }).start();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.info("Prometheus Auto Configure");
+        init();
     }
 
    /* @Bean
