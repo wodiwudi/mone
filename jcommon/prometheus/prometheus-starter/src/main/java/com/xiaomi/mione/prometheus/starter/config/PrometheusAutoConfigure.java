@@ -114,9 +114,9 @@ public class PrometheusAutoConfigure implements InitializingBean {
         new Thread(() -> {
             log.info("start pormetheus server");
             try {
-                String port = System.getenv("PROMETHEUS_PORT");
+                String port = System.getenv("PROMETHEUS_THREAD_POOL_PORT");
                 if (null == port) {
-                    port = "4444";
+                    port = "4857";
                 }
                 log.info("pormetheus port: {}", port);
                 InetSocketAddress addr = new InetSocketAddress(Integer.valueOf(port));
